@@ -2,7 +2,6 @@
 	single linked list merge
 	This problem requires you to merge two ordered singly linked lists into one ordered singly linked list
 */
-// I AM NOT DONE
 
 use std::fmt::{self, Display, Formatter};
 use std::ptr::NonNull;
@@ -29,13 +28,13 @@ struct LinkedList<T> {
     end: Option<NonNull<Node<T>>>,
 }
 
-impl<T> Default for LinkedList<T> {
+impl<T: PartialOrd> Default for LinkedList<T> {
     fn default() -> Self {
         Self::new()
     }
 }
 
-impl<T> LinkedList<T> {
+impl<T: PartialOrd> LinkedList<T> {
     pub fn new() -> Self {
         Self {
             length: 0,
@@ -69,15 +68,58 @@ impl<T> LinkedList<T> {
             },
         }
     }
-	pub fn merge(list_a:LinkedList<T>,list_b:LinkedList<T>) -> Self
+
+	pub fn merge(mut list_a:LinkedList<T>,mut list_b:LinkedList<T>) -> Self
 	{
-		//TODO
-		Self {
-            length: 0,
-            start: None,
-            end: None,
+        let mut list = LinkedList::<T>::new();
+        while let (Some(list_a_start), Some(list_b_start)) = (list_a.start, list_b.start) {
+            let list_a_start_value;
+            let list_b_start_value;
+
+            unsafe{
+                list_a_start_value = &((*list_a_start.as_ptr()).val);
+                list_b_start_value = &((*list_b_start.as_ptr()).val);
+            }
+
+            if  *list_a_start_value < *list_b_start_value {
+                if list.start == None {
+                    list.start = list_a.start;
+                }
+                list.add_other_list_node(&mut list_a);
+            } else {
+                if list.start == None {
+                    list.start = list_b.start;
+                }
+                list.add_other_list_node(&mut list_b);
+            }
         }
+
+        while list_a.start != None {
+            list.add_other_list_node(&mut list_a);
+        }
+        while list_b.start != None {
+            list.add_other_list_node(&mut list_b);
+        }
+
+        list
 	}
+
+    fn add_other_list_node(&mut self, list_b: &mut LinkedList<T>){
+        if let Some(p) = self.end{
+            unsafe{
+                (*p.as_ptr()).next = list_b.start;
+            }
+        }
+        self.end = list_b.start;
+        self.length += 1;
+        
+        if let Some(list_b_start) = list_b.start {
+            unsafe{
+                list_b.start = (*list_b_start.as_ptr()).next;
+            }
+        }
+        list_b.length -= 1;
+    }
 }
 
 impl<T> Display for LinkedList<T>
