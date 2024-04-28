@@ -40,7 +40,7 @@ where
         self.count += 1;
         let mut idx = self.len();
         let mut parent = self.parent_idx(idx);
-        while parent >= 1 && (self.comparator)(&self.items[idx], &self.items[parent]) {
+        while idx > 1 && (self.comparator)(&self.items[idx], &self.items[parent]) {
             self.items.swap(idx, parent);
             idx = parent;
             parent = self.parent_idx(idx);
@@ -89,14 +89,33 @@ where
 
 impl<T> Iterator for Heap<T>
 where
-    T: Default,
+    T: Default + PartialOrd,
 {
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
         if self.count > 0 {
+            self.items.swap(1, self.count);
             self.count -= 1;
-            Some(self.items.remove(1usize))
+            let mut idx = 1;
+            loop {
+                let left = self.left_child_idx(idx);
+                if left <= self.count && (self.comparator)(&self.items[left], &self.items[idx]) {
+                    self.items.swap(idx, left);
+                    idx = left;
+                    continue;
+                }
+
+                let right = self.right_child_idx(idx);
+                if right <= self.count && (self.comparator)(&self.items[right], &self.items[idx]) {
+                    self.items.swap(idx, right);
+                    idx = right;
+                    continue;
+                }
+
+                break;
+            }
+            self.items.pop()
         }else {
             None
         } 

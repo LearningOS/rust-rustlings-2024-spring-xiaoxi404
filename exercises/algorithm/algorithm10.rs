@@ -47,18 +47,9 @@ pub trait Graph {
         if !self.contains(edge.1) {
             self.add_node(edge.1);
         }
-        match self.adjacency_table_mutable().get_mut(edge.0) {
-            Some(v) => {
-                v.push((edge.1.to_string(), edge.2))
-            },
-            None => {}
-        }
-        match self.adjacency_table_mutable().get_mut(edge.1) {
-            Some(v) => {
-                v.push((edge.0.to_string(), edge.2))
-            },
-            None => {}
-        }
+        
+        self.adjacency_table_mutable().get_mut(edge.0).unwrap().push((edge.1.to_string(), edge.2));
+        self.adjacency_table_mutable().get_mut(edge.1).unwrap().push((edge.0.to_string(), edge.2));
     }
     fn contains(&self, node: &str) -> bool {
         self.adjacency_table().get(node).is_some()
